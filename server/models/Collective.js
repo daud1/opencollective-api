@@ -49,7 +49,7 @@ import { types } from '../constants/collectives';
 import expenseStatus from '../constants/expense_status';
 import expenseTypes from '../constants/expense_type';
 import { getFxRate } from '../lib/currency';
-import spamController from '../lib/spam';
+import { collectiveSpamCheck } from '../lib/spam';
 
 const debug = debugLib('collective');
 const debugcollectiveImage = debugLib('collectiveImage');
@@ -654,16 +654,12 @@ export default function(Sequelize, DataTypes) {
             });
           }
 
-          if (instance.type === 'COLLECTIVE') {
-            spamController.collectiveCheck(instance);
-          }
+          collectiveSpamCheck(instance);
 
           return null;
         },
         afterUpdate: async instance => {
-          if (instance.type === 'COLLECTIVE') {
-            spamController.collectiveCheck(instance);
-          }
+          collectiveSpamCheck(instance);
         },
       },
     },

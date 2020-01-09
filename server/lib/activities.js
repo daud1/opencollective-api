@@ -282,7 +282,7 @@ export default {
         return `Suspicious Order: ${userString} gave ${currency} ${amount} to ${collective}. Score: ${activity.data.recaptchaResponse.score}`;
 
       case activities.COLLECTIVE_BADWORD_DETECTED:
-        return getBadWordString(activity, collectiveName, publicUrl);
+        return getSpamKeywordsMessage(activity, collectiveName, publicUrl);
 
       default:
         return '';
@@ -342,7 +342,7 @@ const getUserString = (format, userCollective, email) => {
   return returnVal;
 };
 
-const getBadWordString = (activity, collectiveName, publicUrl) => {
+const getSpamKeywordsMessage = (activity, collectiveName, publicUrl) => {
   const { warnings } = activity.data;
   const fields = Object.keys(warnings);
 
@@ -359,6 +359,5 @@ const getBadWordString = (activity, collectiveName, publicUrl) => {
     Field "website" for <qketoed lsfpills |http://localhost:3000/qketoed-lsfpills> was set to a suspicious value/s: [ keto, pills ]
     Field "description" for <qketoed lsfpills |http://localhost:3000/qketoed-lsfpills> was set to a suspicious value/s: [ pills ]
   */
-  console.log(message);
   return message;
 };
