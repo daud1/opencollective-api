@@ -38,6 +38,7 @@ import {
   whitelistSettings,
   validateSettings,
   getCollectiveAvatarUrl,
+  sanitizeSettings,
 } from '../lib/collectivelib';
 import { invalidateContributorsCache } from '../lib/contributors';
 import { capitalize, flattenArray, getDomain, formatCurrency, cleanTags, md5, strip_tags } from '../lib/utils';
@@ -306,6 +307,9 @@ export default function(Sequelize, DataTypes) {
 
       settings: {
         type: DataTypes.JSON,
+        get() {
+          return sanitizeSettings(this.getDataValue('settings'));
+        },
         set(value) {
           this.setDataValue('settings', whitelistSettings(value));
         },

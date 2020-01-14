@@ -1,4 +1,4 @@
-import { pick } from 'lodash';
+import { get, set, pick } from 'lodash';
 import config from 'config';
 import * as LibTaxes from '@opencollective/taxes';
 import { VAT_OPTIONS } from '../constants/vat';
@@ -139,4 +139,12 @@ export const collectiveSlugBlacklist = [
  */
 export function isBlacklistedCollectiveSlug(slug) {
   return collectiveSlugBlacklist.includes(slug);
+}
+
+/**
+ * Omit non-public properties from settings.
+ */
+export function sanitizeSettings(settings) {
+  if (get(settings, 'paymentMethods.paypal')) set(settings, 'paymentMethods.paypal', true);
+  return settings;
 }

@@ -4,6 +4,7 @@ import * as utils from '../../utils';
 import sinon from 'sinon';
 import emailLib from '../../../server/lib/email';
 import { roles } from '../../../server/constants';
+import { fakeCollective } from '../../test-helpers/fake-data';
 
 const { Transaction, Collective, User } = models;
 
@@ -744,6 +745,22 @@ describe('Collective model', () => {
         expect(collective.githubHandle).to.equal('test');
       });
     });
+  });
+
+  it('sanitizes settings removing paypal tokens', async () => {
+    const collective = await fakeCollective({
+      settings: { paymentMethods: { manual: { info: 'public' }, paypal: { clientSecret: 'private ' } } },
+    });
+
+    expect(collective.settings).to.have.nested.property('paymentMethods.manual');
+    expect(collective.settings).to.have.nested.property('paymentMethods.paypal', true);
+
+    const othercollective = await fakeCollective({
+      settings: {
+        paymentMethods: { manual: { info: 'public' } },
+      },
+    });
+    expect(othercollective.settings).to.not.have.nested.property('paymentMethods.paypal');
   });
 
   // We skip while waiting for a rewrite
