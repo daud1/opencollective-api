@@ -79,6 +79,7 @@ export function setupModels(client) {
     'Conversation',
     'ConversationFollower',
     'Expense',
+    'ExpenseAttachment',
     'LegalDocument',
     'Member',
     'MemberInvitation',
@@ -201,6 +202,10 @@ export function setupModels(client) {
   });
   m.Transaction.belongsTo(m.Expense);
   m.Transaction.belongsTo(m.Order);
+  m.Transaction.hasMany(m.ExpenseAttachment);
+
+  // Expense attachments
+  m.ExpenseAttachment.belongsTo(m.Expense);
 
   // Order.
   m.Order.belongsTo(m.User, {

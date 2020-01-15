@@ -67,7 +67,6 @@ export default function(Sequelize, DataTypes) {
       },
 
       privateMessage: DataTypes.STRING,
-      attachment: DataTypes.STRING,
       category: DataTypes.STRING,
       vat: DataTypes.INTEGER,
 
@@ -133,7 +132,6 @@ export default function(Sequelize, DataTypes) {
             currency: this.currency,
             amount: this.amount,
             description: this.description,
-            attachment: this.attachment,
             category: this.category,
             payoutMethod: this.payoutMethod,
             vat: this.vat,

@@ -12,6 +12,7 @@ import { sortResults, createDataLoaderWithOptions } from './helpers';
 // Loaders generators
 import generateCommentsLoader from './comments';
 import generateConversationLoaders from './conversation';
+import { getAttachmentsByExpenseId } from './expenses';
 
 export const loaders = req => {
   const cache = {};
@@ -158,6 +159,8 @@ export const loaders = req => {
         .then(results => sortResults(ids, results, 'CollectiveId')),
     ),
   };
+
+  context.loaders.expenseAttachments = getAttachmentsByExpenseId;
 
   // getUserDetailsByCollectiveId
   context.loaders.getUserDetailsByCollectiveId = new DataLoader(UserCollectiveIds =>

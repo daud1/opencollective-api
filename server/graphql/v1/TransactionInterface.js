@@ -316,6 +316,7 @@ export const TransactionExpenseType = new GraphQLObjectType({
         resolve(transaction, args, req) {
           // If it's a expense transaction it'll have an ExpenseId
           // otherwise we return null
+          // TODO expense-attachments
           return transaction.ExpenseId
             ? req.loaders.Expense.byId.load(transaction.ExpenseId).then(expense => expense && expense.attachment)
             : null;

@@ -179,6 +179,7 @@ export async function editExpense(remoteUser, expenseData) {
   }
 
   // When updating amount, attachment or payoutMethod, we reset its status to PENDING
+  // TODO expense-attachments
   if (
     expenseData.amount !== expense.amount ||
     expenseData.payoutMethod !== expense.payoutMethod ||

@@ -17,6 +17,8 @@ import emailLib from '../../../../server/lib/email';
 import { getFxRate } from '../../../../server/lib/currency';
 
 import paypalAdaptive from '../../../../server/paymentProviders/paypal/adaptiveGateway';
+import { fakeExpense, fakeUser, fakeExpenseAttachment, fakeCollective } from '../../../test-helpers/fake-data';
+import { roles } from '../../../../server/constants';
 
 /* Queries used throughout these tests */
 const allExpensesQuery = `
@@ -27,7 +29,10 @@ const allExpensesQuery = `
       amount
       category
       user { id email paypalEmail collective { id slug } }
-      collective { id slug } } }`;
+      collective { id slug } 
+      attachment
+    } 
+  }`;
 
 const expensesQuery = `
   query expenses($CollectiveId: Int, $CollectiveSlug: String, $category: String, $FromCollectiveId: Int, $FromCollectiveSlug: String, $status: ExpenseStatus, $offset: Int, $limit: Int, $orderBy: OrderByType) {
@@ -39,6 +44,26 @@ const expensesQuery = `
         category
         user { id email paypalEmail collective { id slug } }
         collective { id slug }
+      }
+    }
+  }
+`;
+
+const expenseQuery = `
+  query expense($id: Int!) {
+    Expense(id: $id) {
+      id
+      description
+      amount
+      category
+      user { id email paypalEmail collective { id slug } }
+      collective { id slug }
+      attachment
+      attachments {
+        id
+        amount
+        description
+        url
       }
     }
   }
@@ -428,6 +453,55 @@ describe('server/graphql/v1/expenses', () => {
       // collective
       expect(expenses.map(e => e.description)).to.deep.equal(['T-shirts', 'Stickers', 'Banner', 'Beer', 'Pizza']);
     }); /* End of "gets the latest expenses from one collective" */
+  });
+
+  describe('#expense', () => {
+    it('hides attachment if not allowed to see', async () => {
+      const host = await fakeCollective({ type: 'ORGANIZATION' });
+      const collective = await fakeCollective({ host });
+      const expense = await fakeExpense({ collective, attachments: [] });
+      const attachment = await fakeExpenseAttachment({ expense });
+      const collectiveAdmin = await fakeUser();
+      await collective.addUserWithRole(collectiveAdmin, roles.ADMIN);
+      const hostAdmin = await fakeUser();
+      await host.addUserWithRole(hostAdmin, roles.ADMIN);
+
+      // Fetch as unauthenticated (should not have URL)
+      let result = await utils.graphqlQuery(expenseQuery, { id: expense.id });
+      expect(result.data.Expense.attachment).to.be.null;
+      result.data.Expense.attachments.forEach(attachmentFromAPI => {
+        expect(attachmentFromAPI.url).to.be.null;
+      });
+
+      // Fetch as another user (should not have URL)
+      const randomUser = await fakeUser();
+      result = await utils.graphqlQuery(expenseQuery, { id: expense.id }, randomUser);
+      expect(result.data.Expense.attachment).to.be.null;
+      result.data.Expense.attachments.forEach(attachmentFromAPI => {
+        expect(attachmentFromAPI.url).to.be.null;
+      });
+
+      // Fetch as expense's creator (should have URL)
+      result = await utils.graphqlQuery(expenseQuery, { id: expense.id }, expense.User);
+      expect(result.data.Expense.attachment).to.eq(attachment.url);
+      result.data.Expense.attachments.forEach(attachmentFromAPI => {
+        expect(attachmentFromAPI.url).to.eq(attachment.url);
+      });
+
+      // Fetch as collective admin (should have URL)
+      result = await utils.graphqlQuery(expenseQuery, { id: expense.id }, collectiveAdmin);
+      expect(result.data.Expense.attachment).to.eq(attachment.url);
+      result.data.Expense.attachments.forEach(attachmentFromAPI => {
+        expect(attachmentFromAPI.url).to.eq(attachment.url);
+      });
+
+      // Fetch as host admin (should have URL)
+      result = await utils.graphqlQuery(expenseQuery, { id: expense.id }, hostAdmin);
+      expect(result.data.Expense.attachment).to.eq(attachment.url);
+      result.data.Expense.attachments.forEach(attachmentFromAPI => {
+        expect(attachmentFromAPI.url).to.eq(attachment.url);
+      });
+    });
   });
 
   describe('#createExpense', () => {

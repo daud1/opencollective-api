@@ -456,7 +456,11 @@ export const ExpenseInputType = new GraphQLInputObjectType({
         description: 'Can be: paypal, other. Also deprecated: donation, manual',
       },
       privateMessage: { type: GraphQLString },
-      attachment: { type: GraphQLString },
+      attachment: {
+        type: GraphQLString,
+        deprecationReason: '2020-01-13 - Expenses now support multiple attachments. Please use attachments instead.',
+      },
+      attachments: { type: new GraphQLList(GraphQLString) },
       user: { type: UserInputType },
       collective: { type: CollectiveAttributesInputType },
     };
